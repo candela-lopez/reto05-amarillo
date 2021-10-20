@@ -200,3 +200,28 @@ if (!require(nortest)){
 if (!require(lubridate)){   
   install.packages("lubridate")  
 }
+
+if (!require(TTR)){   
+  install.packages("TTR")  
+}
+
+
+if (!require(corrplot)){   
+  install.packages("corrplot")  
+}
+
+
+if (!require(ggplot2)){   
+  install.packages("ggplot2")  
+}
+
+
+if (!require(ggdendro)){   
+  install.packages("ggdendro")  
+}
+
+if (!require(cluster)){   
+  install.packages("cluster")  
+}
+
+

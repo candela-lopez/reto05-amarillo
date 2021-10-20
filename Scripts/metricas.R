@@ -36,36 +36,63 @@ arpu <- sum(df$vtas)/6790 #arpu = 3440.717
 dfarpu <- df %>%
   group_by(id_cliente_enc) %>%
   summarise(vtasT = sum(vtas)) %>%
-  mutate(arpu = vtasT > 3440)
+  mutate(arpu = NA)
+
+max(dfarpu$vtasT)
+min(dfarpu$vtasT)
+str(dfarpu)
+
+medio <- (dfarpu$vtasT > 3000 & dfarpu$vtasT < 4000)
+alto <- (dfarpu$vtasT > 4000 & dfarpu$vtasT < 10000)
+muyalto <- (dfarpu$vtasT > 10000)
+bajo <- (dfarpu$vtasT < 3000 & dfarpu$vtasT > 1000)
+muybajo <- (dfarpu$vtasT <= 1000)
+
+dfarpu$arpu[medio] <- 0.5
+dfarpu$arpu[alto] <- 0.75
+dfarpu$arpu[muyalto] <- 1
+dfarpu$arpu[bajo] <- 0.25
+dfarpu$arpu[muybajo] <- 0
 
 #creamos una nueva variable llamada media la cual nos indica la media de compras por cliente
 #cada mes
 dfmes <- df %>%
-  group_by(year(dia), month(dia),id_cliente_enc)%>%
+  group_by(año = year(dia), mes = month(dia),id_cliente_enc)%>%
   mutate(media = mean(vtas))
 
 dfmes<- dfmes %>% distinct(media, .keep_all = TRUE)
 
-
-#para calcular el ARPU por mes
-dfarpumes <- df %>%
+#creamos una nueva variable la cual nos indica la frecuencia de compra por clientes por mes 
+dffrec <- df %>%
   group_by(año=year(dia),mes=month(dia))%>%
-  mutate(media = mean(vtas))
-  
-dfarpumesmedia<- dfarpumes %>% distinct(media, .keep_all = F)
+  count(id_cliente_enc)
 
-dfarpumesmedia <- arrange(dfarpumesmedia, año , mes)
+dfvariables <- merge(x = dffrec, y= dfmes, by= c('id_cliente_enc', 'año', 'mes'))
+dfvariables <- merge(x = dfvariables, y = dfarpu, by= 'id_cliente_enc')
+dfvariables <- dfvariables[,c(1:4, 8:10)]
 
-dfclientes <- df %>%
-  group_by(año = year(dia), mes = month(dia))%>%
-  count(id_cliente_enc)%>%
-  count(mes)
+true <- dfvariables$arpu == TRUE 
+false <- dfvariables$arpu == FALSE 
+dfvariables$arpu[true]= 1
+dfvariables$arpu[false]= 0
 
-dfarpumes <- merge.data.frame(dfarpumesmedia , dfclientes)
+dfvariables2 <- dfvariables %>%
+  group_by(id_cliente_enc) %>%
+  transmute(frecuencia_media = mean(n) , media_mes = mean(media) , arpu = arpu)
 
-dfarpumes <- dfarpumes %>%
-  summarise(arpu = media/n)
+dfvariables2<- dfvariables2 %>% distinct(id_cliente_enc, .keep_all = TRUE)
 
+normalized <- (dfvariables2[,2]-min(dfvariables2[,2]))/(max(dfvariables2[,2])-min(dfvariables2[,2]))
+max(normalized)
+min(normalized)
+normalized2 <- (dfvariables2[,3]-min(dfvariables2[,3]))/(max(dfvariables2[,3])-min(dfvariables2[,3]))
+max(normalized2)
+min(normalized2)
 
+#vemos que esta bien la normalizacion
+ddd<-plot(normalized$frecuencia_media)
+ddd<-plot(normalized2$media_mes)
 
+dfvariables3 <- data.frame(id_cliente  = dfvariables2$id_cliente_enc, arpu = dfvariables2$arpu , frecuencia_media = normalized, media_mes= normalized2 )
+#el dataframe creado nos servira para crear los cluster
 
