@@ -57,42 +57,58 @@ dfarpu$arpu[muybajo] <- 0
 #creamos una nueva variable llamada media la cual nos indica la media de compras por cliente
 #cada mes
 dfmes <- df %>%
-  group_by(año = year(dia), mes = month(dia),id_cliente_enc)%>%
+  group_by(ano = year(dia), mes = month(dia),id_cliente_enc)%>%
   mutate(media = mean(vtas))
 
 dfmes<- dfmes %>% distinct(media, .keep_all = TRUE)
 
 #creamos una nueva variable la cual nos indica la frecuencia de compra por clientes por mes 
 dffrec <- df %>%
-  group_by(año=year(dia),mes=month(dia))%>%
+  group_by(ano=year(dia),mes=month(dia))%>%
   count(id_cliente_enc)
 
-dfvariables <- merge(x = dffrec, y= dfmes, by= c('id_cliente_enc', 'año', 'mes'))
-dfvariables <- merge(x = dfvariables, y = dfarpu, by= 'id_cliente_enc')
-dfvariables <- dfvariables[,c(1:4, 8:10)]
+#nueva variable media general
+dfm <- df %>%
+  group_by(id_cliente_enc) %>%
+  summarise(media2 = mean(vtas))
 
-true <- dfvariables$arpu == TRUE 
-false <- dfvariables$arpu == FALSE 
-dfvariables$arpu[true]= 1
-dfvariables$arpu[false]= 0
+#nueva variable media semanal
+dfsemana <- df %>%
+  group_by(ano = year(dia), semana = week(dia),id_cliente_enc)%>%
+  mutate(media3 = mean(vtas))
+
+dfsemana <- dfsemana[,c(1,3,7)] %>%
+  group_by(id_cliente_enc) %>%
+  mutate(media3 = mean(media3))
+  
+dfsemana<- dfsemana %>% distinct(media3, .keep_all = TRUE)
+
+#variable de varianza de ventas totales
+dfvarianzavtas<- df %>% 
+  group_by(id_cliente_enc) %>% 
+  summarize(varianza_vtas= var(vtas))
+
+sum(is.na(dfvarianzavtas)) #esta nueva variables contiene NA ya que
+                       #algunos clientes solo han realizado una unica compra
+
+dfvarianzavtas[is.na(dfvarianzavtas)] <- 0
+sum(is.na(dfvarianzavtas))  #pasamos los valores NA a cero
+
+#Crear df de todas las variables
+dfvariables <- merge(x = dffrec, y= dfmes, by= c('id_cliente_enc', 'ano', 'mes'))
+dfvariables <- merge(x = dfvariables, y= dfsemana, by= c('id_cliente_enc' , 'dia'))
+dfvariables <- merge(x = dfvariables, y = dfarpu, by= 'id_cliente_enc')
+dfvariables <- merge(x = dfvariables, y = dfm, by= 'id_cliente_enc')
+dfvariables <- merge(x = dfvariables, y = dfvarianzavtas, by= 'id_cliente_enc')
+
+dfvariables <- dfvariables[,c(1,5,8:13)]
 
 dfvariables2 <- dfvariables %>%
   group_by(id_cliente_enc) %>%
-  transmute(frecuencia_media = mean(n) , media_mes = mean(media) , arpu = arpu)
+  transmute(frecuencia_media = mean(n) , media_mes = mean(media) , arpu = arpu , media_general = media2 , media_semanal = media3 , varianza_vtas = varianza_vtas)
 
 dfvariables2<- dfvariables2 %>% distinct(id_cliente_enc, .keep_all = TRUE)
 
-normalized <- (dfvariables2[,2]-min(dfvariables2[,2]))/(max(dfvariables2[,2])-min(dfvariables2[,2]))
-max(normalized)
-min(normalized)
-normalized2 <- (dfvariables2[,3]-min(dfvariables2[,3]))/(max(dfvariables2[,3])-min(dfvariables2[,3]))
-max(normalized2)
-min(normalized2)
 
-#vemos que esta bien la normalizacion
-ddd<-plot(normalized$frecuencia_media)
-ddd<-plot(normalized2$media_mes)
 
-dfvariables3 <- data.frame(id_cliente  = dfvariables2$id_cliente_enc, arpu = dfvariables2$arpu , frecuencia_media = normalized, media_mes= normalized2 )
-#el dataframe creado nos servira para crear los cluster
 

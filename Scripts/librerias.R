@@ -70,14 +70,6 @@ if (!require(fastDummies)){
 
 
 
-
-if (!require(BBmics)){   
-  install.packages("BBmics") 
-} 
-
-
-
-
 if (!require(rafalib)){   
   install.packages("rafalib") 
 } 
