@@ -216,4 +216,18 @@ if (!require(cluster)){
   install.packages("cluster")  
 }
 
+if (!require(zoo)){   
+  install.packages("zoo")  
+}
 
+if (!require(tseries)){   
+  install.packages("tseries")  
+}
+
+if (!require(astsa)){   
+  install.packages("astsa")  
+}
+
+if (!require(BTYD)){   
+  install.packages("BTYD")  
+}

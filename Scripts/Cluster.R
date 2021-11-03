@@ -20,15 +20,18 @@ min(normalized3)
 normalized4 <- (dfvariables2[,6]-min(dfvariables2[,6]))/(max(dfvariables2[,6])-min(dfvariables2[,6]))
 max(normalized4)
 min(normalized4)
+normalized5 <- (dfvariables2[,7]-min(dfvariables2[,7]))/(max(dfvariables2[,7])-min(dfvariables2[,7]))
+max(normalized5)
+min(normalized5)
 
 #vemos que esta bien la normalizacion
-ddd<-plot(normalized$frecuencia_media)
+ddd<-plot(normalized1$frecuencia_media)
 ddd<-plot(normalized2$media_mes)
 ddd<-plot(normalized3$media_general)
 ddd<-plot(normalized4$media_semanal)
 ddd<-plot(normalized5$varianza_vtas)
 
-normalized <- data.frame(id_cliente  = dfvariables2$id_cliente_enc, arpu = dfvariables2$arpu , frecuencia_media = normalized1, media_mes= normalized2 , media_general = normalized3 ,
+normalized <- data.frame(id_cliente_enc  = dfvariables2$id_cliente_enc, arpu = dfvariables2$arpu , frecuencia_media = normalized1, media_mes= normalized2 , media_general = normalized3 ,
                            media_semanal = normalized4 , varianza_vtas = normalized5)
 #el dataframe creado nos servira para crear los cluster
 
@@ -88,4 +91,14 @@ sil <- km_clusters$silinfo$widths
 # Objects with negative silhouette
 neg_sil_index <- which(sil[, 'sil_width'] < 0)
 sil[neg_sil_index,  ,drop = F]   #ningun valor negativo
+
+
+clientes <- normalized[,(c(1,8))]
+dfnn <- inner_join(x = df, y = clientes, by = "id_cliente_enc")
+#media de las ventas por cluster
+dfnmedia <- dfnn %>%
+  group_by(cluster) %>%
+  summarise(mm = mean(vtas) )
+
+
 
