@@ -216,18 +216,36 @@ if (!require(cluster)){
   install.packages("cluster")  
 }
 
+if (!require(influxdbclient)){   
+  install.packages("influxdbclient")  
+}
+
+if (!require(Rcpp)){   
+  install.packages("Rcpp")  
+}
+
+if (!require(httr)){   
+  install.packages("httr")  
+}
+
+if (!require(readr)){   
+  install.packages("readr")  
+}
+
+if (!require(jsonlite)){   
+  install.packages("jsonlite")  
+}
+
 if (!require(zoo)){   
   install.packages("zoo")  
 }
 
-if (!require(tseries)){   
-  install.packages("tseries")  
+if (!require(xts)){   
+  install.packages("xts")  
 }
 
 if (!require(astsa)){   
   install.packages("astsa")  
 }
 
-if (!require(BTYD)){   
-  install.packages("BTYD")  
-}
+

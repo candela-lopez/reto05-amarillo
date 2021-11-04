@@ -1,12 +1,9 @@
 #Segmentacion de clientes mediante k means
 # Carga de datos, librerias y metricas ----------------------------------------------
 
-source("Scripts/librerias.R")
-source("Scripts/carga-datos.R")
-source("Scripts/procesamiento.R")
 source("Scripts/metricas.R")
 
-#Normalizar los datos
+#Normalizar los datos -------------------------
 #normalizar
 normalized1 <- (dfvariables2[,2]-min(dfvariables2[,2]))/(max(dfvariables2[,2])-min(dfvariables2[,2]))
 max(normalized1)
@@ -35,7 +32,7 @@ normalized <- data.frame(id_cliente_enc  = dfvariables2$id_cliente_enc, arpu = d
                            media_semanal = normalized4 , varianza_vtas = normalized5)
 #el dataframe creado nos servira para crear los cluster
 
-
+#Creando los segmentos --------------------------
 
 #grafica de correlaciones
 corrmatrix <- cor(normalized[,-1])
@@ -79,7 +76,7 @@ normalized$cluster <- k.means.fit$cluster
 ggplot() + geom_point(aes(x = frecuencia_media , y = media_mes , colour = factor(cluster)), data = normalized, alpha = 0.5) + ggtitle('Conjunto de Datos')
 
 
-#validar los cluster
+#validar los cluster -------------------------------
 km_clusters <- eclust(x = normalized[,2:7], FUNcluster = "kmeans", k = 2, seed = 200 ,
                       hc_metric = "euclidean", nstart = 10, graph = F)
 fviz_silhouette(sil.obj = km_clusters, print.summary = TRUE, palette = "Accent" ,
@@ -92,7 +89,7 @@ sil <- km_clusters$silinfo$widths
 neg_sil_index <- which(sil[, 'sil_width'] < 0)
 sil[neg_sil_index,  ,drop = F]   #ningun valor negativo
 
-
+#Estadisticas cluster ----------------------------------
 clientes <- normalized[,(c(1,8))]
 dfnn <- inner_join(x = df, y = clientes, by = "id_cliente_enc")
 #media de las ventas por cluster
@@ -100,5 +97,38 @@ dfnmedia <- dfnn %>%
   group_by(cluster) %>%
   summarise(mm = mean(vtas) )
 
+#media de las ventas por mes
+dfnmedia_mes <- dfnn %>%
+  group_by(cluster , year(dia) , month(dia)) %>%
+  summarise(mm = mean(vtas) ) 
 
+dfnmedia_mes <- dfnmedia_mes %>%
+  group_by(cluster) %>%
+  summarise(mmm = mean(mm))
 
+#media de las ventas por semana
+dfnmedia_sem <- dfnn %>%
+  group_by(cluster , year(dia) , week(dia)) %>%
+  summarise(mm = mean(vtas) ) 
+
+dfnmedia_sem <- dfnmedia_sem %>%
+  group_by(cluster) %>%
+  summarise(mmm = mean(mm))
+
+#frecuencia de compra al mes
+dfnfrec <- dfnn %>%
+  group_by(cluster , ano=year(dia),mes=month(dia))%>%
+  count(id_cliente_enc)
+
+dfnfrec <- dfnfrec %>%
+  group_by(cluster) %>%
+  summarise(mean(n))
+
+#frecuencia de compra a la semana
+dfnfrec2 <- dfnn %>%
+  group_by(cluster , ano=year(dia),sem=week(dia))%>%
+  count(id_cliente_enc)
+
+dfnfrec2 <- dfnfrec2 %>%
+  group_by(cluster) %>%
+  summarise(mean(n))

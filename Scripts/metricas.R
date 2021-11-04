@@ -1,8 +1,6 @@
 #Metricas para graficar y crear nuevas variables
 # Carga de datos y librerias ----------------------------------------------
 
-source("Scripts/librerias.R")
-source("Scripts/carga-datos.R")
 source("Scripts/procesamiento.R")
 
 #Nuevo data frame para graficar los datos

@@ -1,3 +1,5 @@
+source("Scripts/librerias.R")
+
 #Carga de datos -----------------------------------------------
 
 data <- readRDS("Datos originales/data.RDS")

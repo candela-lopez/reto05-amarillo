@@ -2,7 +2,6 @@
 
 # Carga de datos y librerias ----------------------------------------------
 
-source("Scripts/librerias.R")
 source("Scripts/carga-datos.R")
 
 
